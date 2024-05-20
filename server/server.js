@@ -1,10 +1,14 @@
+//create express server
 const express = require('express');
 const path = require('path');
+//db connection opens Mongodb
 const db = require('./config/connection');
 const routes = require('./routes');
 //import apollo server and its express middleware
 const { ApolloServer } = require('@apollo/server');
 const { expressMiddleware } = require('@apollo/server/express4');
+//import auth JWT information as authMiddleware
+const { authMiddleware } = require('./utils/auth');
 //import required graphql schema files
 const { typeDefs, resolvers } = require('./schemas');
 
@@ -28,10 +32,10 @@ app.use('/graphql', expressMiddleware(server, {
   context: authMiddleware
 }));
 
-// if we're in production, serve client/build as static assets
+// if we're in production, serve client/build for static assets: does that need to change to ..client/dist for node?
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../client/build')));
-//added the following line to connect to index.html
+//added the following line: route that says any request not for a static file will go to index.html, this allows for different front end views loaded by react
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/dist/index.html'));
   });
